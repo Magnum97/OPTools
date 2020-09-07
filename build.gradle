@@ -1,0 +1,67 @@
+// Configure Auto Relocation
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+plugins {
+    id 'java'
+    id "io.freefair.lombok" version "5.0.0-rc6"
+    id 'kr.entree.spigradle' version '2.1.1'
+    id 'com.github.johnrengelman.shadow' version '6.0.0'
+}
+
+group 'me.magnum.mc'
+version '0.0.1'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+spigot {
+    authors = ['Magnum1997']
+    apiVersion = '1.16'
+    depends= ['GriefPrevention','WorldGuard']
+    commands {
+        give {
+            aliases = ['i']
+            description = 'Give command.'
+            permission = 'test.foo'
+            permissionMessage = 'You do not have permission!'
+            usage = '/<command> [test|stop]'
+        }
+    }
+    permissions {
+        'buzzkill.notify.*' {
+            description = 'Receive notifications when a spawn is blocked'
+            defaults = 'false'
+            children = ['buzzkill.notify.bee': true]
+        }
+        'buzzkill.notify.bee' {
+            description = 'Receive notifications when a bee spawn is blocked'
+            defaults = 'false'
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    jitpack()
+}
+
+dependencies {
+    compileOnly paper("1.16.2")
+    implementation 'org.mineacademy:Foundation:5.6.3'
+    implementation 'com.github.javafactorydev:lightningstorage:3.1.6'
+}
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "me.magnum.project" // Default value is "shadow"
+
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+tasks.prepareSpigotPlugins.dependsOn tasks.shadowJar
+
+shadowJar {
+    minimize()
+//    classifier = null  // Uncomment to overwrite lean jar with shadow Jar
+    version = null
+}
